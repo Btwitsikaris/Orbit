@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orbit — Chat, projects, docs and calendar in one place</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="description" content="Orbit is a self-hosted team workspace: messenger, projects and sprints, docs, calendar, approvals and video meetings in one app.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<style>
+:root{--blue:#0E2AC5;--orb:radial-gradient(circle at 50% 30%,#5175ff 0%,#0e2ac5 55%,#020b40 100%);--ease:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%}
+body{overflow-x:hidden;background:#f7fafc;color:#1a1a1a;font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(14,42,197,.18);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(14,42,197,.32)}
+a{color:inherit;text-decoration:none}
+h1,h2,p{margin:0}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#bg{position:fixed;inset:0;z-index:-10;transition:background 1.2s cubic-bezier(.65,0,.35,1);background:radial-gradient(circle at center,#fff 0%,#ecefff 35%,#c2d1ff 100%)}
+#bg.s1{background:radial-gradient(circle at center,#fff 0%,#fbffe5 38%,#e8ff9c 100%)}
+#bg.s2{background:radial-gradient(circle at center,#fff 0%,#fff0f1 38%,#ffd1d5 100%)}
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none}
+#cv canvas{width:100%;height:100%;display:block}
+#loader{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 42%,#fff 0%,#eef2ff 45%,#dbe4ff 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;transition:opacity .55s cubic-bezier(.65,0,.35,1)}
+#loader.leave{opacity:0;pointer-events:none}
+#loader>*{opacity:0;transform:translateY(18px);filter:blur(6px);animation:lin 1s var(--ease) forwards}
+#loader>:nth-child(1){animation-delay:.1s}#loader>:nth-child(2){animation-delay:.26s}#loader>:nth-child(3){animation-delay:.42s}
+@keyframes lin{to{opacity:1;transform:none;filter:none}}
+.mono{font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+#lstat{font-size:10px;letter-spacing:.28em;color:#6b7bb5}
+#lbar{width:clamp(180px,32vw,280px);height:2px;background:rgba(14,42,197,.14);border-radius:99px}
+#lfill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#5175ff,#0e2ac5);box-shadow:0 0 14px rgba(47,105,255,.55);transition:width .45s var(--ease)}
+#lnum{font-size:11px;letter-spacing:.1em;color:#0e2ac5;font-weight:700;font-variant-numeric:tabular-nums}
+header{position:fixed;top:0;left:0;right:0;height:80px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;z-index:30;pointer-events:none;opacity:0;transform:translateY(-16px);transition:all .8s var(--ease)}
+header>*{pointer-events:auto}
+.on header,header.on{opacity:1;transform:none}
+.logo{font-family:'Space Grotesk';font-weight:900;font-size:18px;letter-spacing:.25em;color:#0a0a0a;display:inline-flex;align-items:center;gap:10px}
+.logo img{width:30px;height:30px;display:block}.logo img.inv{filter:invert(1)}
+nav{display:none;gap:48px;font:500 14px Raleway}nav a:hover{opacity:.6}
+.hr{display:flex;gap:10px;align-items:center}
+.glass{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:inset 0 1.5px 2px rgba(255,255,255,.7),0 8px 30px rgba(0,0,0,.04)}
+.ib{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;cursor:pointer;color:#111}.ib:hover{background:rgba(255,255,255,.3)}
+.cta{display:flex;align-items:center;gap:14px;padding:6px 6px 6px 22px;border-radius:99px;font:500 13px Raleway;border-color:rgba(255,255,255,.1);border-top-color:rgba(255,255,255,.9);border-bottom-color:rgba(255,255,255,.85);background:rgba(255,255,255,.12)}
+.orb{width:32px;height:32px;border-radius:99px;background:var(--orb);display:grid;place-items:center;color:#fff;transition:transform .3s}.cta:hover .orb{transform:scale(1.05)}
+section{position:relative;z-index:10;min-height:100svh;display:flex;padding:0 24px;pointer-events:none}
+section .pe{pointer-events:auto}
+.lab{font:400 11px 'JetBrains Mono';letter-spacing:.25em;text-transform:uppercase;color:rgba(14,42,197,.8)}
+.h2{font:500 2.6rem/1 Raleway;letter-spacing:-.02em;color:#0a0a0a;margin-top:24px}
+.p{font:500 16px/1.55 Raleway;color:#404040}
+#hero{align-items:flex-end;padding-bottom:48px;opacity:0;transition:opacity .6s}
+.on #hero{opacity:1}
+.hrow{display:flex;flex-direction:column;gap:32px;width:100%;justify-content:space-between}
+.hin{opacity:0;transform:translateY(22px);transition:all 1s var(--ease)}.on .hin{opacity:1;transform:none}
+.eye{font:500 12px Raleway;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:16px;display:block}
+h1{font:500 2.6rem/.95 Raleway;letter-spacing:-.05em;color:#0a0a0a}
+.cred{font:400 10px 'JetBrains Mono';letter-spacing:.18em;text-transform:uppercase;color:#737373;margin-top:20px}
+.cue{display:none;align-items:center;gap:8px;margin-top:16px;color:#737373;font:400 10px 'JetBrains Mono';letter-spacing:.2em;text-transform:uppercase;animation:pl 2s infinite}
+@keyframes pl{50%{opacity:.5}}
+#drop{align-items:center;padding-top:128px;padding-bottom:160px}
+.grid{display:grid;grid-template-columns:1fr;gap:40px;width:100%;align-items:start}
+.card{border-radius:1.4rem;padding:1px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.3),rgba(255,255,255,.1));box-shadow:0 14px 40px -12px rgba(14,42,197,.18);transition:transform .3s}.card:hover{transform:translateY(-2px)}
+.card>div{position:relative;border-radius:1.35rem;background:rgba(255,255,255,.25);backdrop-filter:blur(20px);padding:20px 24px;overflow:hidden}
+.card>div:before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent)}
+.ch{display:flex;align-items:center;gap:10px;font:400 10px 'JetBrains Mono';text-transform:uppercase}
+.ch i{color:var(--blue)}.ch b{font-weight:400;color:#a3a3a3;flex:1}
+.dot{width:8px;height:8px;border-radius:99px;background:radial-gradient(circle at 35% 30%,#5175ff,#0e2ac5);box-shadow:0 0 8px rgba(47,105,255,.6)}
+.cv{font:600 18px Raleway;margin:10px 0 4px}.cd{font:400 13px Inter;color:#737373}
+#shape{flex-direction:column;justify-content:space-between;padding-top:144px;padding-bottom:144px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.35);backdrop-filter:blur(12px);color:#404040;font:400 10px 'JetBrains Mono';letter-spacing:.2em;text-transform:uppercase;margin-top:28px}
+#rel{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:144px;padding-bottom:144px}
+.rv{opacity:0;transform:translateY(42px);filter:blur(8px);transition:all 1.5s var(--ease)}.rv.in{opacity:1;transform:none;filter:none}
+footer{position:relative;z-index:10;background:#0a0a0a;color:#fff;border-radius:2.5rem 2.5rem 0 0;overflow:hidden}
+.bloom{position:absolute;border-radius:50%;filter:blur(40px);pointer-events:none}
+.mq{border-bottom:1px solid rgba(255,255,255,.1);padding:20px 0;overflow:hidden;position:relative}
+.mt{display:inline-flex;white-space:nowrap;animation:mq 26s linear infinite;font:500 clamp(28px,6vw,64px) Raleway;color:rgba(255,255,255,.9)}
+.mt span{padding:0 32px;display:inline-flex;align-items:center;gap:32px}.mt span:after{content:"";width:10px;height:10px;border-radius:99px;background:#2f69ff}
+@keyframes mq{to{transform:translateX(-50%)}}
+.fb{position:relative;padding:64px 24px 40px}
+.fg{display:grid;grid-template-columns:1fr;gap:48px}
+.fl{font:400 11px 'JetBrains Mono';letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.fh{font:500 2.25rem/.95 Raleway;margin:20px 0 32px}
+.mail{display:inline-flex;align-items:center;gap:20px;padding:8px 8px 8px 28px;border-radius:99px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);font:500 16px Raleway;transition:background .3s}.mail:hover{background:rgba(255,255,255,.1)}
+.mail .orb{width:40px;height:40px;transition:transform .3s}.mail:hover .orb{transform:rotate(45deg)}
+.cols{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
+.cols h4{margin:0 0 20px;font:400 10px 'JetBrains Mono';letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.cols a{display:flex;align-items:center;gap:4px;font:400 15px Raleway;color:rgba(255,255,255,.75);margin-bottom:12px}.cols a:hover{color:#fff}
+.cols a svg{width:12px;height:12px;opacity:0;transform:translate(-4px,4px);transition:all .3s}.cols a:hover svg{opacity:1;transform:none}
+.fbar{margin-top:80px;padding-top:28px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center}
+.fbar .l{display:flex;align-items:center;gap:14px;font:400 11px 'JetBrains Mono';color:rgba(255,255,255,.4)}
+.fbar .logo{color:#fff;font-size:16px;letter-spacing:.22em}
+.sd{width:6px;height:6px;border-radius:99px;background:#2f69ff}
+.contact{display:flex;flex-direction:column;gap:6px;text-align:right}
+.contact .cb{font:400 14px Raleway,sans-serif;color:rgba(255,255,255,.75)}.contact .cb strong{color:#fff;font-weight:600}
+.contact .ce{font:500 15px Raleway,sans-serif;color:#5b8aff;word-break:break-all;transition:color .3s}.contact .ce:hover{color:#fff}
+.contact .cn{font:400 12px Raleway,sans-serif;color:rgba(255,255,255,.45)}
+@media(max-width:640px){.contact{text-align:left;width:100%}}
+.so{display:flex;gap:10px}.so a{width:40px;height:40px;border-radius:99px;border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;color:rgba(255,255,255,.7)}.so a:hover{color:#fff}
+.qs{margin:64px 0 0;padding:24px 28px;border-radius:1.25rem;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font:400 12px/1.8 'JetBrains Mono',monospace;color:rgba(255,255,255,.85);overflow-x:auto;white-space:pre}.qs .c{color:rgba(255,255,255,.4)}
+#scrim{position:fixed;inset:0;z-index:40;background:rgba(10,10,10,.2);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .4s}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:100%;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-left:1px solid #f5f5f5;padding:32px;transform:translateX(100%);transition:transform .6s var(--ease);display:flex;flex-direction:column;overflow:auto}
+.open #drawer{transform:none}.open #scrim{opacity:1;pointer-events:auto}
+.dh{display:flex;align-items:center;justify-content:space-between}
+.dh b{font:900 14px 'Space Grotesk';letter-spacing:.2em;text-transform:uppercase;display:flex;gap:10px;align-items:center}
+.note{font:italic 400 12px 'JetBrains Mono';color:#a3a3a3;margin:20px 0 28px;line-height:1.5}
+.dt{font:700 10px 'JetBrains Mono';letter-spacing:.2em;text-transform:uppercase;display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.th{display:block;width:100%;text-align:left;border:1px solid #e5e5e5;border-radius:12px;padding:16px;margin-bottom:10px;background:#fff;cursor:pointer;transition:transform .2s}
+.th.sel{background:#0a0a0a;color:#fff;transform:scale(1.02)}
+.th b{font:700 12px Inter;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.th i{width:12px;height:12px;border-radius:4px;display:block}.th span{font:400 10px/1.4 Inter;opacity:.65}
+.df{margin-top:auto;padding-top:24px;font:400 9px 'JetBrains Mono';color:#a3a3a3;display:grid;gap:6px}
+.rst{margin-top:14px;display:flex;gap:8px;align-items:center;justify-content:center;border:1px solid #e5e5e5;border-radius:12px;padding:12px;background:#fff;cursor:pointer;font:600 12px Inter}
+@media(min-width:640px){h1{font-size:3.75rem}.h2{font-size:3.75rem}#drawer{width:420px}.cols{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){header{height:96px;padding:0 48px}nav{display:flex}.logo{font-size:20px}.ib{width:44px;height:44px}.cta{padding-left:24px;font-size:14px}section{padding-left:48px;padding-right:48px}h1{font-size:90px;line-height:1;white-space:nowrap}.eye{font-size:14px;margin-bottom:24px}.hrow{flex-direction:row;align-items:flex-end}#hero{padding-bottom:56px}.h2{font-size:80px;line-height:.92}#drop{padding-top:160px}#shape{padding-top:176px;padding-bottom:176px}.cue{display:flex}.fh{font-size:3.75rem}.fb{padding:96px 48px 40px}.fbar{margin-top:112px}footer{border-radius:4rem 4rem 0 0}.rh{font-size:88px}}
+@media(min-width:1024px){.grid{grid-template-columns:7fr 5fr;gap:64px}.fg{grid-template-columns:5fr 7fr}}
+</style></head>
+<body>
+<div id="bg"></div><div id="cv"></div>
+
+<div id="loader"><div id="lstat" class="mono">Calibrating gravity field</div><div id="lbar"><div id="lfill"></div></div><div id="lnum">000%</div></div>
+
+<header id="hdr"><a class="logo" href="/"><img src="/assets/logo-256.png" alt="">ORBIT</a>
+<nav><a href="#drop">Features</a><a href="#shape">Why Orbit</a><a href="#setup">Self-host</a><a href="/app">Sign in</a></nav>
+<div class="hr"><button class="ib glass" id="openD" aria-label="Controls"><svg class="i" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg></button>
+<a class="cta glass" href="/app">Open Orbit<span class="orb"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></a></div></header>
+
+<main>
+<section id="hero"><div class="hrow">
+<div class="pe"><span class="eye hin" style="transition-delay:.15s">[ Team workspace ]</span><h1 class="hin" style="transition-delay:.28s">Talk. Plan. One orbit.</h1></div>
+<div class="pe hin" style="transition-delay:.45s;max-width:260px"><p style="font:500 15px/1.35 Raleway">Chat, projects, docs, calendar and approvals in one app you host yourself. No more tab juggling.</p><div class="cred">© 2026 — Built for modern teams</div><div class="cue"><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M12 5v14m7-7-7 7-7-7"/></svg>Scroll</div></div>
+</div></section>
+
+<section id="drop"><div class="grid">
+<div><div class="lab rv pe">[ 02 — Workspace ]</div><h2 class="h2 rv pe" style="transition-delay:.1s">Everything your<br>team runs on.</h2><p class="p rv pe" style="transition-delay:.2s;margin-top:32px;max-width:32rem">Channels and threads for the conversation, boards and sprints for the work, docs for what you decide and a calendar for when it happens. Every message can become an issue, and every issue key turns into a link, so nothing falls through the cracks.</p></div>
+<div class="rv pe" style="transition-delay:.25s;display:flex;flex-direction:column;gap:14px">
+<div class="card"><div><div class="ch"><span style="color:var(--blue)">01</span><b>Chat</b><span class="dot"></span></div><div class="cv">Channels · DMs · Threads</div><div class="cd">Live messages, reactions and @mentions</div></div></div>
+<div class="card"><div><div class="ch"><span style="color:var(--blue)">02</span><b>Projects</b><span class="dot"></span></div><div class="cv">Boards · Sprints · Backlog</div><div class="cd">Type /task in chat to file an issue</div></div></div>
+<div class="card"><div><div class="ch"><span style="color:var(--blue)">03</span><b>Docs · Calendar · Approvals</b><span class="dot"></span></div><div class="cv">Write, schedule, sign off</div><div class="cd">Markdown docs, invites with video links, request flows</div></div></div>
+</div></div></section>
+
+<section id="shape"><div><div class="lab rv pe">[ 03 — Team ]</div><h2 class="h2 rv pe" style="transition-delay:.1s;max-width:42rem">Scattered, then aligned.</h2></div>
+<div style="align-self:flex-end;max-width:24rem" class="shr"><p class="p rv pe" style="transition-delay:.15s">Out of scattered tools, your team reassembles around one shared workspace, with messages, docs, meetings and tasks finding their place together. Move your cursor through it and watch the work reconnect.</p>
+<div class="pill rv pe" style="transition-delay:.28s"><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3zM13 13l6 6"/></svg>Swipe through it</div></div></section>
+
+<section id="rel"><div style="max-width:48rem"><div class="lab rv pe">[ 04 — Yours ]</div><h2 class="h2 rh rv pe" style="transition-delay:.12s;margin-top:28px;font-size:2.8rem">And it runs<br>on your terms.</h2><p class="p rv pe" style="transition-delay:.24s;margin:32px auto 0;max-width:28rem">One small Node app and one database file. No external services, no per-seat pricing, and your data stays on your own server.</p></div></section>
+</main>
+
+<footer>
+<div class="bloom" style="top:-8rem;right:-8rem;width:28rem;height:28rem;background:radial-gradient(circle,#2f69ff66 0%,transparent 65%)"></div>
+<div class="bloom" style="bottom:-10rem;left:-10rem;width:32rem;height:32rem;background:radial-gradient(circle,#5175ff44 0%,transparent 65%)"></div>
+<div class="mq"><div class="mt" id="mt"></div></div>
+<div class="fb" id="setup"><div class="fg">
+<div class="rv"><div class="fl">[ Get started ]</div><div class="fh">Ready to put your<br>team in orbit?</div>
+<a class="mail" href="/app">Open Orbit<span class="orb"><svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a></div>
+<div class="cols" id="cols"></div></div>
+<pre class="qs rv"><span class="c"># run Orbit (Node 22 or newer)</span>
+$ npm start
+
+<span class="c"># open it, then create the first account (it becomes admin)</span>
+http://localhost:3000/app
+
+<span class="c"># or with Docker</span>
+$ docker build -t orbit . &amp;&amp; docker run -p 3000:3000 -v orbit-data:/app/data orbit</pre>
+<div class="fbar"><div class="l"><span class="logo"><img src="/assets/logo-256.png" alt="" class="inv">ORBIT</span><span class="sd"></span><span>© 2026 Orbit</span></div>
+<div class="contact"><div class="cb">Designed by <strong>Aniket Majumdar</strong></div><a class="ce" href="mailto:aniketmajumdar2006@gmail.com">aniketmajumdar2006@gmail.com</a><div class="cn">for questions, bugs, or feedback</div></div></div></div>
+</footer>
+
+<div id="scrim"></div>
+<aside id="drawer"><div class="dh"><b><svg class="i" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>Studio Controls</b><button class="ib" id="closeD" style="border:1px solid #e5e5e5;background:#fff"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+<div class="note">Set the hero sphere palette. As you scroll, the scene morphs to volt-lime, then rose-pink as the heart assembles.</div>
+<div class="dt"><svg class="i" style="width:12px;height:12px" viewBox="0 0 24 24"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/></svg>Hero Palette Shaders</div>
+<div id="themes"></div>
+<div class="df"><div>RENDER ENGINE / THREE.JS WEBGL</div><div>DYNAMICS SOLVER / 3D COLLISION VERLET</div></div>
+<button class="rst" id="reset"><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>Reset Defaults</button></aside>
+
+<script type="module">
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);
+const control={progress:0,started:false};
+const mousePos={x:99,y:99,isDown:false};
+const ARW='<svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg>';
+// static content
+$('mt').innerHTML=('<span>Chat</span><span>Plan</span><span>Write</span><span>Schedule</span>').repeat(2);
+const COLS={Product:[['Chat','/app#/chat'],['Projects','/app#/projects'],['Docs','/app#/docs'],['Calendar','/app#/calendar']],Workspace:[['Approvals','/app#/approvals'],['Search','#drop'],['Notifications','#drop'],['Meetings','#drop']],Resources:[['Sign in','/app'],['Self-host','#setup'],['Health check','/health']]};
+$('cols').innerHTML=Object.entries(COLS).map(([t,l],i)=>`<div class="rv" style="transition-delay:${i*.08}s"><h4>${t}</h4>${l.map(([x,h])=>`<a href="${h}">${x}${ARW}</a>`).join('')}</div>`).join('');
+// reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.45});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+// themes
+const THEMES=[['roseGold','Royal Blue & Pearl','Hyper-distinct cobalt spheres floating in soft white-slate gradients.','#2F69FF','#2F69FF'],['pinkBlush','Rose Blush & Crème','Sweet candy pinks and juicy strawberry accents in a pearl studio.','#FFA6B3','#FFC5C2'],['voltLime','Volt Lime & Slate','Electric neon volt-lime against a clean white-slate horizon.','#E1FC03','#E1FC03'],['arcticBlue','Arctic Sky & Crystal','Cool arctic crystal blues with a translucent glass sheen.','#96E5FF','#96E5FF']];
+let theme='roseGold';
+function renderThemes(){$('themes').innerHTML=THEMES.map(t=>`<button class="th ${t[0]===theme?'sel':''}" data-id="${t[0]}"><b>${t[1]}<i style="background:${t[3]}"></i></b><span>${t[2]}</span></button>`).join('');
+ document.querySelectorAll('.th').forEach(b=>b.onclick=()=>{theme=b.dataset.id;renderThemes();rebuild()})}
+renderThemes();
+$('openD').onclick=()=>document.body.classList.add('open');
+$('closeD').onclick=$('scrim').onclick=()=>document.body.classList.remove('open');
+$('reset').onclick=()=>{theme='roseGold';renderThemes();rebuild()};
+// pointer
+addEventListener('pointermove',e=>{mousePos.x=e.clientX/innerWidth*2-1;mousePos.y=-(e.clientY/innerHeight)*2+1});
+addEventListener('mousedown',()=>mousePos.isDown=true);addEventListener('mouseup',()=>mousePos.isDown=false);
+// scroll progress
+let tick=false;
+const onScroll=()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;const p=scrollY/(innerHeight||1);control.progress=p;
+ $('bg').className=p>1.55?'s2':p>.7?'s1':''})};
+addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
+// smooth scroll
+let target=scrollY,smooth=false;
+addEventListener('wheel',e=>{if(e.ctrlKey)return;e.preventDefault();if(!smooth){target=scrollY;smooth=true}
+ target=Math.max(0,Math.min(document.documentElement.scrollHeight-innerHeight,target+e.deltaY))},{passive:false});
+(function loop(){requestAnimationFrame(loop);if(smooth){const d=target-scrollY;if(Math.abs(d)<.3){scrollTo(0,target);smooth=false}else scrollTo(0,scrollY+d*.09)}})();
+addEventListener('scroll',()=>{if(!smooth)target=scrollY},{passive:true});
+
+// ---------- Scene ----------
+let dispose=null;
+function createScene(ballColor,onReady){
+const container=$('cv');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,container.clientWidth/container.clientHeight,.1,100);camera.position.set(0,0,11);
+const canvas=document.createElement('canvas');container.appendChild(canvas);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(container.clientWidth,container.clientHeight);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const hemiLight=new THREE.HemisphereLight(0xffffff,new THREE.Color(ballColor),1.6);scene.add(hemiLight);
+const dl=(c,i,x,y,z)=>{const l=new THREE.DirectionalLight(c,i);l.position.set(x,y,z);scene.add(l);return l};
+const key=dl(0xffffff,1.4,-6,10,8);key.castShadow=true;
+Object.assign(key.shadow.mapSize,{width:2048,height:2048});Object.assign(key.shadow.camera,{near:.5,far:30,left:-8,right:8,top:8,bottom:-8});
+key.shadow.bias=-.0003;key.shadow.radius=12;
+dl(0xffffff,1.25,8,7,-8);dl(0xffffff,.4,0,0,11);dl(0xffffff,.3,-9,-2,4);
+let vw=10,vh=6;
+const upd=()=>{vh=2*Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)*camera.position.z;vw=vh*(container.clientWidth/container.clientHeight)};upd();
+const isMobile=innerWidth<768,ballCount=isMobile?54:96;
+const C=h=>new THREE.Color(h);
+const getColors=base=>{const h=base.toLowerCase();
+ if(h==='#e1fc03')return{pastel:C('#FBFFE2'),light:C('#EFFE69'),medium:C('#E1FC03'),deep:C('#B1E200'),glass:C('#DCFF32')};
+ if(h==='#ffc5c2'||h==='#ffa19e')return{pastel:C('#FFF5F4'),light:C('#FFECEB'),medium:C('#FFA6B3'),deep:C('#FF4D6D'),glass:C('#FFA6B3')};
+ if(h==='#96e5ff')return{pastel:C('#F0F9FF'),light:C('#C9F1FF'),medium:C('#96E5FF'),deep:C('#2BA5FF'),glass:C('#98E4FF')};
+ if(h==='#2f69ff')return{pastel:C('#ECEFFF'),light:C('#A8C1FF'),medium:C('#2F69FF'),deep:C('#0A33BF'),glass:C('#4D80FF')};
+ if(h==='#141414'||h==='#000000')return{pastel:C('#D8D8D8'),light:C('#555555'),medium:C('#242424'),deep:C('#0A0A0A'),glass:C('#1F1F1F')};
+ const c=C(base);return{pastel:c.clone().offsetHSL(0,-.15,.25),light:c.clone().offsetHSL(0,-.05,.12),medium:c.clone(),deep:c.clone().offsetHSL(.01,.1,-.12),glass:c.clone()}};
+const palette=getColors(ballColor);const isBlack=['#141414','#18181b','#000000'].includes(ballColor.toLowerCase());
+const palHero=palette,palLime=getColors('#E1FC03'),palPink=getColors('#FFC5C2');
+const ROLES=['pastel','light','medium','deep','glass'];
+const curPal={};ROLES.forEach(r=>curPal[r]=new THREE.Color());
+const geo=new THREE.SphereGeometry(1,48,48);const balls=[];
+for(let i=0;i<ballCount;i++){
+ let radius=.33;const rand=Math.random();
+ if(rand<.3)radius=.27+Math.random()*.12;else if(rand<.8)radius=.42+Math.random()*.18;else radius=.66+Math.random()*.21;
+ const mass=radius**3;let chosen=palette.medium,color,mat,role='medium';
+ const isGlass=Math.random()<.22&&!isBlack;
+ if(isGlass){mat=new THREE.MeshPhysicalMaterial({color:palette.glass,roughness:.08,metalness:0,clearcoat:1,clearcoatRoughness:.03,transmission:.95,ior:1.485,thickness:2.2,specularColor:C('#ffffff'),specularIntensity:1,attenuationColor:palette.pastel,attenuationDistance:1,emissive:palette.glass,emissiveIntensity:.12,transparent:true});color=palette.glass;role='glass'}
+ else{const r=Math.random();if(r<.25){chosen=palette.pastel;role='pastel'}else if(r<.55){chosen=palette.light;role='light'}else if(r<.85){chosen=palette.medium;role='medium'}else{chosen=palette.deep;role='deep'}
+  mat=new THREE.MeshPhysicalMaterial({color:chosen,roughness:.44,metalness:0,clearcoat:.24,clearcoatRoughness:.35,emissive:isBlack?C('#000000'):chosen,emissiveIntensity:isBlack?0:.08,transparent:true});color=chosen}
+ const group=new THREE.Group(),mesh=new THREE.Mesh(geo,mat);mesh.scale.setScalar(radius);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);scene.add(group);
+ balls.push({id:i,radius,mass,position:new THREE.Vector3(),velocity:new THREE.Vector3(),meshGroup:group,sphere:mesh,material:mat,role,isGlass,visualScale:radius,color,shapeTarget:new THREE.Vector3()});
+}
+const meanRadius=balls.reduce((s,b)=>s+b.radius,0)/balls.length;let shapeScale=1;
+const inHeart=(x,y)=>{const a=x*x+y*y-1;return a*a*a-x*x*y*y*y<=0};
+const assignHeart=()=>{const S=Math.min(vw*.30,vh*.27),cy=-vh*.03;
+ shapeScale=Math.max(.3,Math.min(1,(S*.45/2.3)/meanRadius));
+ for(const b of balls){let x=0,y=0,t=0;do{x=(Math.random()*2-1)*1.25;y=Math.random()*2.55-1.4;t++}while(!inHeart(x,y)&&t<60);
+  b.shapeTarget.set(x*S,(y+.12)*S+cy,(Math.random()-.5)*.35)}};
+assignHeart();
+const scatterFar=inward=>{const R=Math.max(vw,vh)*1.5;
+ for(const b of balls){const a=Math.random()*Math.PI*2,px=Math.cos(a)*R*1.25,py=Math.sin(a)*R*.85,pz=(Math.random()-.5)*4;
+  b.position.set(px,py,pz);b.meshGroup.position.copy(b.position);
+  if(inward)b.velocity.set(-px,-py,-pz).normalize().multiplyScalar(.08+Math.random()*.05);else b.velocity.set(0,0,0)}};
+scatterFar(false);
+const params={rebound:-.3,mouseRepelForce:.05,mouseRepelRadius:4.4,centerAttractForce:.0035,bounciness:.02};
+const mpv=new THREE.Vector3(),mouseWorld3D=new THREE.Vector3();
+const updateMouse3D=()=>{mpv.set(mousePos.x,mousePos.y,.5).unproject(camera);const dir=mpv.sub(camera.position).normalize();const d=-camera.position.z/dir.z;mouseWorld3D.copy(camera.position).add(dir.multiplyScalar(d))};
+const clamp01=v=>v<0?0:v>1?1:v;
+const smoothstep=(a,b,x)=>{const t=clamp01((x-a)/(b-a));return t*t*(3-2*t)};
+const lerp=(a,b,t)=>a+(b-a)*t;const easeOutCubic=t=>1-Math.pow(1-t,3);
+let raf=0;const clock=new THREE.Clock();let localStarted=false,entranceStart=0,reported=false;
+const diffVec=new THREE.Vector3(),cd=new THREE.Vector3(),relVel=new THREE.Vector3(),deltaPos=new THREE.Vector3(),rotAxis=new THREE.Vector3(),prevMouse=new THREE.Vector3();let mouseSpeed=0;
+const sim=()=>{raf=requestAnimationFrame(sim);
+ const time=clock.getElapsedTime();clock.getDelta();updateMouse3D();
+ if(control.started&&!localStarted){localStarted=true;entranceStart=time;scatterFar(true)}
+ if(!localStarted){renderer.render(scene,camera);if(!reported){reported=true;onReady()}return}
+ const progress=control.progress;
+ const heroF=1-smoothstep(.30,.80,progress),dropRaw=smoothstep(.40,.95,progress),flyF=smoothstep(2.7,3.45,progress);
+ const shapeF=smoothstep(1.40,2.05,progress)*(1-smoothstep(2.55,3.0,progress));
+ const dropF=dropRaw*(1-smoothstep(1.25,1.75,progress));
+ const bLime=smoothstep(.55,1.05,progress),bPink=smoothstep(1.40,1.95,progress);
+ for(const r of ROLES)curPal[r].copy(palHero[r]).lerp(palLime[r],bLime).lerp(palPink[r],bPink);
+ hemiLight.groundColor.copy(curPal.medium);
+ const entranceT=easeOutCubic(clamp01((time-entranceStart)/2.2));
+ const attractionBoost=lerp(7.5,1,entranceT);
+ const interacting=Math.abs(mousePos.x)<.99||Math.abs(mousePos.y)<.99;
+ mouseSpeed=interacting?mouseWorld3D.distanceTo(prevMouse):0;if(mouseSpeed>3)mouseSpeed=3;prevMouse.copy(mouseWorld3D);
+ let damping=.91;damping=lerp(damping,.992,dropF);damping=lerp(damping,.90,shapeF);damping=lerp(damping,.985,flyF);
+ const camZ=camera.position.z;const clusterActive=Math.max(heroF,entranceT<1?1:0);
+ for(const b of balls){
+  if(heroF>.01){b.velocity.x+=Math.sin(time*.4+b.id*1.5)*.0004*b.radius*heroF;b.velocity.y+=Math.cos(time*.5+b.id*1.2)*.0004*b.radius*heroF;b.velocity.z+=Math.sin(time*.35+b.id)*.0001*heroF}
+  const cs=params.centerAttractForce*attractionBoost*clusterActive;
+  if(cs>.00001){b.velocity.x+=(0-b.position.x)*cs*.14;b.velocity.y+=(0-b.position.y)*cs*.7;b.velocity.z+=(0-b.position.z)*cs*.6}
+  if(dropF>.001)b.velocity.y-=.011*dropF;
+  if(shapeF>.001){const k=.06*shapeF;b.velocity.x+=(b.shapeTarget.x-b.position.x)*k;b.velocity.y+=(b.shapeTarget.y-b.position.y)*k;b.velocity.z+=(b.shapeTarget.z-b.position.z)*k}
+  if(flyF>.001){const st=(b.id*.6180339887)%1,l=smoothstep(st*.55,st*.55+.45,flyF);b.velocity.z+=.05*l;b.velocity.x+=b.position.x*.006*l;b.velocity.y+=b.position.y*.006*l}
+  if(interacting){diffVec.subVectors(b.position,mouseWorld3D);const rd=diffVec.length(),down=mousePos.isDown;
+   const R=down?params.mouseRepelRadius*1.4:params.mouseRepelRadius,F=down?params.mouseRepelForce*1.7:params.mouseRepelForce;
+   if(rd<R&&rd>.0001){const ra=rd/R,sf=1-(ra*ra*(3-2*ra)),push=sf*F*(1+mouseSpeed*3.2);
+    diffVec.normalize();diffVec.z*=.12;diffVec.normalize();b.velocity.addScaledVector(diffVec,push)}}
+  b.velocity.multiplyScalar(damping);b.position.addScaledVector(b.velocity,1);
+  const c=b.isGlass?curPal.glass:curPal[b.role];b.material.color.copy(c);if(!isBlack)b.material.emissive.copy(c);
+  b.material.opacity=flyF>.001?1-smoothstep(camZ-2.6,camZ-.3,b.position.z):1;
+  const tv=b.radius*(1-(1-shapeScale)*shapeF);b.visualScale+=(tv-b.visualScale)*.12;b.sphere.scale.setScalar(b.visualScale);
+ }
+ const collideScale=.28*(1-.93*shapeF)*(1-flyF);
+ for(let s=0;s<4;s++)for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){
+  const b1=balls[i],b2=balls[j];cd.subVectors(b2.position,b1.position);const dist=cd.length(),minD=b1.visualScale+b2.visualScale;
+  if(dist<minD&&dist>.001){const ov=minD-dist;cd.multiplyScalar(1/dist);const tm=b1.mass+b2.mass;
+   b1.position.addScaledVector(cd,-ov*(b2.mass/tm)*collideScale);b2.position.addScaledVector(cd,ov*(b1.mass/tm)*collideScale);
+   relVel.subVectors(b2.velocity,b1.velocity);const van=relVel.dot(cd);
+   if(van<-.0001){const imp=-(1+params.bounciness)*van/(1/b1.mass+1/b2.mass);b1.velocity.addScaledVector(cd,-imp/b1.mass);b2.velocity.addScaledVector(cd,imp/b2.mass)}}}
+ const xB=vw/2-.2,topY=vh/2-.05,floorY=-vh/2+.05,zB=2,rest=.30+.35*dropF,contain=flyF<.5,zC=flyF<.02;
+ for(const b of balls){const r=b.visualScale;
+  if(contain){
+   if(b.position.x<-xB-r){b.position.x=-xB-r;b.velocity.x*=params.rebound}else if(b.position.x>xB+r){b.position.x=xB+r;b.velocity.x*=params.rebound}
+   if(b.position.y-r<floorY){b.position.y=floorY+r;if(b.velocity.y<0)b.velocity.y=-b.velocity.y*rest;if(dropF>.3){b.velocity.x*=.86;b.velocity.z*=.86}}
+   if(b.position.y+r>topY){b.position.y=topY-r;if(b.velocity.y>0)b.velocity.y*=params.rebound}}
+  if(zC){if(b.position.z<-zB){b.position.z=-zB;b.velocity.z*=params.rebound}else if(b.position.z>zB){b.position.z=zB;b.velocity.z*=params.rebound}}
+  deltaPos.copy(b.position).sub(b.meshGroup.position);
+  if(deltaPos.lengthSq()>1e-6){rotAxis.set(deltaPos.y,-deltaPos.x,0).normalize();b.meshGroup.rotateOnWorldAxis(rotAxis,(deltaPos.length()/b.radius)*.95)}
+  b.meshGroup.position.copy(b.position)}
+ renderer.render(scene,camera);if(!reported){reported=true;onReady()}
+};
+sim();
+const resize=()=>{const w=container.clientWidth,h=container.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);upd();assignHeart()};
+const ro=new ResizeObserver(resize);ro.observe(container);
+return()=>{cancelAnimationFrame(raf);ro.disconnect();renderer.dispose();geo.dispose();balls.forEach(b=>b.material.dispose());canvas.remove()};
+}
+function rebuild(){if(dispose)dispose();const c=THEMES.find(t=>t[0]===theme)[4];dispose=createScene(c,()=>{ready=true})}
+let ready=false;
+rebuild();
+// ---------- Loader ----------
+let val=0,last=performance.now(),done=false;
+(function lp(now){if(done)return;requestAnimationFrame(lp);const dt=Math.min((now-last)/1000,.05);last=now;
+ if(ready){val+=(100-val)*6*dt;if(val>=99.4)val=100}else val+=(92-val)*1.7*dt;
+ $('lfill').style.width=val+'%';$('lnum').textContent=String(Math.round(val)).padStart(3,'0')+'%';
+ $('lstat').textContent=val>=100?'Entering orbit':'Calibrating gravity field';
+ if(val>=99.9&&ready){done=true;setTimeout(()=>{$('loader').classList.add('leave');
+  setTimeout(()=>{control.started=true;document.body.classList.add('on');$('hdr').classList.add('on')},520)},140)}
+})(performance.now());
+</script>
+</body></html>

@@ -1,0 +1,26 @@
+{
+  "name": "orbit",
+  "version": "2.0.0",
+  "description": "Self-hosted team workspace: chat, projects and sprints, docs, calendar and approvals (zero dependencies)",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning test/api.test.mjs",
+    "test:e2e": "node test/e2e.cjs"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "MIT",
+  "keywords": [
+    "workspace",
+    "team",
+    "chat",
+    "projects",
+    "sqlite",
+    "self-hosted"
+  ],
+  "private": false
+}
