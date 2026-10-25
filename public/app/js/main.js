@@ -214,6 +214,13 @@ let routeToken = 0;
 function route() {
   if (!S.me) return;
   const path = (location.hash || '#/').slice(1) || '/';
+  // #/search and #/notifications are shortcuts (used by the website footer): open Home, then the search box or bell
+  if (path === '/search' || path === '/notifications') {
+    history.replaceState(null, '', '#/');
+    route();
+    setTimeout(() => (path === '/search' ? $('#q')?.focus() : $('#bell')?.click()), 200);
+    return;
+  }
   view?.destroy?.();
   view = null;
   const outer = $('#view');
