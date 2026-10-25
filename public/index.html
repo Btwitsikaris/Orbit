@@ -185,7 +185,7 @@ const mousePos={x:99,y:99,isDown:false};
 const ARW='<svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg>';
 // static content
 $('mt').innerHTML=('<span>Chat</span><span>Plan</span><span>Write</span><span>Schedule</span>').repeat(2);
-const COLS={Product:[['Chat','/app#/chat'],['Projects','/app#/projects'],['Docs','/app#/docs'],['Calendar','/app#/calendar']],Workspace:[['Approvals','/app#/approvals'],['Search','#drop'],['Notifications','#drop'],['Meetings','#drop']],Resources:[['Sign in','/app'],['Self-host','#setup'],['Health check','/health']]};
+const COLS={Product:[['Chat','/app#/chat'],['Projects','/app#/projects'],['Docs','/app#/docs'],['Calendar','/app#/calendar']],Workspace:[['Approvals','/app#/approvals'],['Search','/app#/search'],['Notifications','/app#/notifications'],['Meetings','/app#/calendar']],Resources:[['Sign in','/app'],['Self-host','#setup'],['Health check','/health']]};
 $('cols').innerHTML=Object.entries(COLS).map(([t,l],i)=>`<div class="rv" style="transition-delay:${i*.08}s"><h4>${t}</h4>${l.map(([x,h])=>`<a href="${h}">${x}${ARW}</a>`).join('')}</div>`).join('');
 // reveal
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.45});
