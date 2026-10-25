@@ -38,6 +38,7 @@ svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke
 header{position:fixed;top:0;left:0;right:0;height:80px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;z-index:30;pointer-events:none;opacity:0;transform:translateY(-16px);transition:all .8s var(--ease)}
 header>*{pointer-events:auto}
 .on header,header.on{opacity:1;transform:none}
+.on header.off,header.on.off{opacity:0;transform:translateY(-100%)}header.off>*{pointer-events:none}
 .logo{font-family:'Space Grotesk';font-weight:900;font-size:18px;letter-spacing:.25em;color:#0a0a0a;display:inline-flex;align-items:center;gap:10px}
 .logo img{width:30px;height:30px;display:block}.logo img.inv{filter:invert(1)}
 nav{display:none;gap:48px;font:500 14px Raleway}nav a:hover{opacity:.6}
@@ -203,7 +204,7 @@ addEventListener('pointermove',e=>{mousePos.x=e.clientX/innerWidth*2-1;mousePos.
 addEventListener('mousedown',()=>mousePos.isDown=true);addEventListener('mouseup',()=>mousePos.isDown=false);
 // scroll progress
 let tick=false;
-const onScroll=()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;const p=scrollY/(innerHeight||1);control.progress=p;
+const onScroll=()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;const p=scrollY/(innerHeight||1);control.progress=p;$('hdr').classList.toggle('off',document.querySelector('footer').getBoundingClientRect().top<90);
  $('bg').className=p>1.55?'s2':p>.7?'s1':''})};
 addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
 // smooth scroll
